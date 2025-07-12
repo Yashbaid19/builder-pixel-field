@@ -20,6 +20,7 @@ import {
   Calendar,
   Badge,
 } from "lucide-react";
+import { userApi, swapApi } from "../lib/api";
 
 // Mock data types
 interface SwapRequest {
