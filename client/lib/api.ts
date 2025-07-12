@@ -26,11 +26,12 @@ const handleResponse = async (response: Response) => {
       }
     }
 
-    console.error("API Error:", {
+    console.error("API Error Details:", {
       url: response.url,
       status: response.status,
       statusText: response.statusText,
       message: errorMessage,
+      baseURL: baseURL,
     });
 
     throw new Error(errorMessage);
