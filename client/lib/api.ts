@@ -225,18 +225,40 @@ export const userApi = {
   },
 
   uploadProfilePicture: async (file: File) => {
+    // If in demo mode, create a mock URL
+    if (isDemoMode()) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const mockImageUrl = URL.createObjectURL(file);
+          resolve({ imageUrl: mockImageUrl });
+        }, 1000);
+      });
+    }
+
     const formData = new FormData();
-    formData.append("profilePicture", file);
+    formData.append("profilePhoto", file); // Backend expects "profilePhoto" field
 
     const token = getAuthToken();
-    const response = await fetch(`${baseURL}/api/user/profile-picture`, {
-      method: "POST",
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: formData,
-    });
-    return handleResponse(response);
+
+    try {
+      const response = await fetch(`${baseURL}/api/users/profile-picture`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          // Don't set Content-Type for FormData - browser will set it with boundary
+        },
+        body: formData,
+      });
+      return handleResponse(response);
+    } catch (networkError) {
+      console.error(
+        "Network error during profile picture upload:",
+        networkError,
+      );
+      throw new Error(
+        `Cannot connect to backend server at ${baseURL}. Please check if the server is running and the URL is correct.`,
+      );
+    }
   },
 
   searchUsers: async (skill?: string) => {
