@@ -76,13 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setIsAuthenticated(true);
         setUser(demoUser);
-
-        // Show warning to user
-        setTimeout(() => {
-          alert(
-            "Demo mode: Backend server not available. Using offline demo data.",
-          );
-        }, 100);
+        setIsDemoMode(true);
 
         return;
       }
