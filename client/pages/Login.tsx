@@ -31,7 +31,7 @@ export default function Login() {
             <p className="text-gray-600">Log in to continue</p>
           </div>
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="email"
