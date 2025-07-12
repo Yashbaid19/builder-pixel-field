@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRightLeft } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 export function Header() {
   return (
