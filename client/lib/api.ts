@@ -77,50 +77,78 @@ export const authApi = {
     skillsWanted: string[];
     availability: string[];
   }) => {
-    const response = await fetch(`${baseURL}/api/auth/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return handleResponse(response);
-  },
-
-  login: async (email: string, password: string) => {
-    const response = await fetch(`${baseURL}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    return handleResponse(response);
-  },
-
-  forgotPassword: async (email: string) => {
-    const response = await fetch(`${baseURL}/api/auth/forgot-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
-    return handleResponse(response);
-  },
-
-  resetPassword: async (token: string, password: string) => {
-    const response = await fetch(
-      `${baseURL}/api/auth/reset-password/${token}`,
-      {
+    try {
+      const response = await fetch(`${baseURL}/api/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password }),
-      },
-    );
-    return handleResponse(response);
+        body: JSON.stringify(data),
+      });
+      return handleResponse(response);
+    } catch (networkError) {
+      console.error("Network error during signup:", networkError);
+      throw new Error(
+        `Cannot connect to backend server at ${baseURL}. Please check if the server is running and the URL is correct.`,
+      );
+    }
+  },
+
+  login: async (email: string, password: string) => {
+    try {
+      const response = await fetch(`${baseURL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      return handleResponse(response);
+    } catch (networkError) {
+      console.error("Network error during login:", networkError);
+      throw new Error(
+        `Cannot connect to backend server at ${baseURL}. Please check if the server is running and the URL is correct.`,
+      );
+    }
+  },
+
+  forgotPassword: async (email: string) => {
+    try {
+      const response = await fetch(`${baseURL}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+      return handleResponse(response);
+    } catch (networkError) {
+      console.error("Network error during forgot password:", networkError);
+      throw new Error(
+        `Cannot connect to backend server at ${baseURL}. Please check if the server is running and the URL is correct.`,
+      );
+    }
+  },
+
+  resetPassword: async (token: string, password: string) => {
+    try {
+      const response = await fetch(
+        `${baseURL}/api/auth/reset-password/${token}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ password }),
+        },
+      );
+      return handleResponse(response);
+    } catch (networkError) {
+      console.error("Network error during password reset:", networkError);
+      throw new Error(
+        `Cannot connect to backend server at ${baseURL}. Please check if the server is running and the URL is correct.`,
+      );
+    }
   },
 
   changePassword: async (currentPassword: string, newPassword: string) => {
