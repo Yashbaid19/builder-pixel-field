@@ -15,6 +15,7 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
+  isDemoMode: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
