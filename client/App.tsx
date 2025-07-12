@@ -28,27 +28,28 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
-                <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/swap-request" element={<SwapRequest />} />
-                    <Route path="/matches" element={<Matches />} />
-          <Route path="/browse-skills" element={<SkillsBrowse />} />
-          <Route path="/features" element={<About />} />
-          <Route path="/how-it-works" element={<About />} />
-          <Route path="/contact" element={<About />} />
-          <Route path="/privacy" element={<About />} />
-          <Route path="/terms" element={<About />} />
-          <Route path="/forgot-password" element={<Login />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/swap-request" element={<SwapRequest />} />
+            <Route path="/matches" element={<Matches />} />
+            <Route path="/browse-skills" element={<SkillsBrowse />} />
+            <Route path="/features" element={<About />} />
+            <Route path="/how-it-works" element={<About />} />
+            <Route path="/contact" element={<About />} />
+            <Route path="/privacy" element={<About />} />
+            <Route path="/terms" element={<About />} />
+            <Route path="/forgot-password" element={<Login />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
