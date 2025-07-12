@@ -101,6 +101,7 @@ export default function Settings() {
         availability: user.availability || [],
         profilePicture: null,
       });
+      setImagePreview(user.profilePicture || "");
     }
   }, [user]);
 
