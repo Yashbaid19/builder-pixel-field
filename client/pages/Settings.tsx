@@ -167,35 +167,63 @@ export default function Settings() {
     setErrors({});
 
     try {
-      // Update profile via API
-      await userApi.updateProfile({
-        fullName: profileData.fullName,
-        email: profileData.email,
+      // Prepare data for backend API
+      const updateData = {
+        name: profileData.fullName,
         location: profileData.location,
         skillsOffered: profileData.skillsOffered,
         skillsWanted: profileData.skillsWanted,
-        availability: profileData.availability,
-      });
+        availability: profileData.availability.join(", "), // Convert array to string for backend
+      };
+
+      // Update profile via new backend API
+      const updatedProfile = await userApi.updateUserProfile(updateData);
 
       // Upload profile picture if one was selected
       if (profileData.profilePicture) {
         await userApi.uploadProfilePicture(profileData.profilePicture);
       }
 
-      // Update user context
+      // Update user context with response data
       updateUser({
-        fullName: profileData.fullName,
-        email: profileData.email,
-        location: profileData.location,
-        skillsOffered: profileData.skillsOffered,
-        skillsWanted: profileData.skillsWanted,
-        availability: profileData.availability,
+        fullName: updatedProfile.name || profileData.fullName,
+        email: profileData.email, // Email typically not updated via profile endpoint
+        location: updatedProfile.location || profileData.location,
+        skillsOffered:
+          updatedProfile.skillsOffered || profileData.skillsOffered,
+        skillsWanted: updatedProfile.skillsWanted || profileData.skillsWanted,
+        availability:
+          typeof updatedProfile.availability === "string"
+            ? updatedProfile.availability.split(", ").map((s) => s.trim())
+            : updatedProfile.availability || profileData.availability,
       });
 
-      alert("Profile updated successfully!");
+      alert("✅ Profile updated successfully!");
     } catch (error: any) {
       console.error("Error updating profile:", error);
-      alert(error.message || "Failed to update profile. Please try again.");
+
+      // Show more specific error messages
+      if (
+        error.message?.includes("Cannot connect to backend") ||
+        error.message?.includes("API endpoint not found") ||
+        error.message?.includes("HTTP 404")
+      ) {
+        alert(
+          "Backend server not available. Profile changes saved locally in demo mode.",
+        );
+
+        // Update local context in demo mode
+        updateUser({
+          fullName: profileData.fullName,
+          email: profileData.email,
+          location: profileData.location,
+          skillsOffered: profileData.skillsOffered,
+          skillsWanted: profileData.skillsWanted,
+          availability: profileData.availability,
+        });
+      } else {
+        alert(error.message || "Failed to update profile. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }
