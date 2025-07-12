@@ -481,44 +481,53 @@ export default function Dashboard() {
 
               {/* Quick Stats Section */}
               <div className="bg-white rounded-xl shadow-sm border p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Quick Stats
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {stats.swapsCompleted}
-                    </div>
-                    <div className="text-xs text-green-600">
-                      Swaps Completed
-                    </div>
-                  </div>
-                  <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                    <div className="flex items-center justify-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                      <span className="text-2xl font-bold text-yellow-600">
-                        {stats.avgRating > 0
-                          ? stats.avgRating.toFixed(1)
-                          : "N/A"}
-                      </span>
-                    </div>
-                    <div className="text-xs text-yellow-600">Avg Rating</div>
-                  </div>
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {stats.skillsShared}
-                    </div>
-                    <div className="text-xs text-blue-600">Skills Shared</div>
-                  </div>
-                  <div className="text-center p-3 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {stats.skillsLearning}
-                    </div>
-                    <div className="text-xs text-purple-600">
-                      Skills Learning
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Quick Stats
+                  </h2>
+                  {statsError && (
+                    <span className="text-xs text-yellow-600">Demo Data</span>
+                  )}
                 </div>
+
+                {statsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {dashboardStats.totalSwaps}
+                      </div>
+                      <div className="text-xs text-blue-600">Total Swaps</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {dashboardStats.acceptedSwaps}
+                      </div>
+                      <div className="text-xs text-green-600">Accepted</div>
+                    </div>
+                    <div className="text-center p-3 bg-red-50 rounded-lg">
+                      <div className="text-2xl font-bold text-red-600">
+                        {dashboardStats.rejectedSwaps}
+                      </div>
+                      <div className="text-xs text-red-600">Rejected</div>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {dashboardStats.feedbacks}
+                      </div>
+                      <div className="text-xs text-purple-600">Feedbacks</div>
+                    </div>
+                  </div>
+                )}
+
+                {statsError && (
+                  <div className="mt-4 text-xs text-yellow-600 text-center">
+                    Unable to load live stats: {statsError}
+                  </div>
+                )}
               </div>
             </div>
 
