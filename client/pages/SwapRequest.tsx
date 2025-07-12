@@ -2,16 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { useAuth } from "../contexts/AuthContext";
-import { Search, User, Clock, MessageCircle } from "lucide-react";
+import { Search, User as UserIcon, Clock, MessageCircle } from "lucide-react";
 import { swapApi, userApi } from "../lib/api";
-
-interface User {
-  id: string;
-  name: string;
-  avatar: string;
-  skills: string[];
-  rating: number;
-}
 
 interface User {
   id: string;
