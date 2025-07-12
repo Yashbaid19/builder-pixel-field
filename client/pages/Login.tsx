@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -14,6 +15,8 @@ export default function Login() {
     // Simulate login process
     setTimeout(() => {
       setIsLoading(false);
+      // Set authentication state
+      login();
       // Redirect to swap request form after successful login
       navigate("/swap-request");
     }, 1000);
