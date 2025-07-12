@@ -14,30 +14,55 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link
-            to="/browse-skills"
-            className="text-white hover:text-gray-300 transition-colors"
-          >
-            Browse Skills
-          </Link>
-          <Link
-            to="/matches"
-            className="text-white hover:text-gray-300 transition-colors"
-          >
-            Matches
-          </Link>
-          <Link
-            to="/how-it-works"
-            className="text-white hover:text-gray-300 transition-colors"
-          >
-            How It Works
-          </Link>
-          <Link
-            to="/contact"
-            className="text-white hover:text-gray-300 transition-colors"
-          >
-            Contact
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/browse-skills"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Browse Skills
+              </Link>
+              <Link
+                to="/swap-request"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Request Swap
+              </Link>
+              <Link
+                to="/matches"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Matches
+              </Link>
+              <Link
+                to="/incoming-requests"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                My Requests
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/browse-skills"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Browse Skills
+              </Link>
+              <Link
+                to="/how-it-works"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                How It Works
+              </Link>
+              <Link
+                to="/contact"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Contact
+              </Link>
+            </>
+          )}
         </nav>
 
         <div className="flex items-center gap-4">
