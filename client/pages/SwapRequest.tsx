@@ -28,7 +28,7 @@ const availabilityOptions = [
 
 export default function SwapRequest() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [searchParams] = useSearchParams();
   const preselectedUserId = searchParams.get("userId");
 
@@ -43,23 +43,91 @@ export default function SwapRequest() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserSearch, setShowUserSearch] = useState(!preselectedUserId);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load users on component mount
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        setLoadingUsers(true);
+        const response = await userApi.searchUsers();
+        setUsers(response.users || []);
+      } catch (err) {
+        console.error("Error loading users:", err);
+        setError("Failed to load users. Please try again.");
+        // Fallback to mock data if API fails
+        setUsers([]);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadUsers();
+    }
+  }, [isAuthenticated]);
+
+  // Search users by skill when search term changes
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (!searchTerm.trim()) {
+        // Load all users when search is empty
+        try {
+          const response = await userApi.searchUsers();
+          setUsers(response.users || []);
+        } catch (err) {
+          console.error("Error loading users:", err);
+        }
+        return;
+      }
+
+      try {
+        setLoadingUsers(true);
+        const response = await userApi.searchUsers(searchTerm);
+        setUsers(response.users || []);
+      } catch (err) {
+        console.error("Error searching users:", err);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      const timeoutId = setTimeout(searchUsers, 300); // Debounce search
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchTerm, isAuthenticated]);
 
   // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
   if (!isAuthenticated) {
-    navigate("/login");
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
-  const filteredUsers = mockUsers.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.skills.some((skill) =>
+  const filteredUsers = users.filter(
+    (currentUser) =>
+      currentUser.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      currentUser.skills.some((skill) =>
         skill.toLowerCase().includes(searchTerm.toLowerCase()),
       ),
   );
 
-  const selectedUser = mockUsers.find(
-    (user) => user.id === formData.requestedTo,
+  const selectedUser = users.find(
+    (currentUser) => currentUser.id === formData.requestedTo,
   );
 
   const handleAvailabilityChange = (option: string) => {
