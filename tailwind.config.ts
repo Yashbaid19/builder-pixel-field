@@ -57,6 +57,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        skillswap: {
+          black: "hsl(var(--skillswap-black))",
+          yellow: "hsl(var(--skillswap-yellow))",
+          gray: "hsl(var(--skillswap-gray))",
+          "light-gray": "hsl(var(--skillswap-light-gray))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
