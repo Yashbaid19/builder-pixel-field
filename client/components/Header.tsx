@@ -34,12 +34,6 @@ export function Header() {
               >
                 Matches
               </Link>
-              <Link
-                to="/dashboard"
-                className="text-white hover:text-gray-300 transition-colors"
-              >
-                My Requests
-              </Link>
             </>
           ) : (
             <>
