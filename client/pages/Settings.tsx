@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { useAuth } from "../contexts/AuthContext";
+import { userApi, authApi } from "../lib/api";
 import {
   User,
   Mail,
