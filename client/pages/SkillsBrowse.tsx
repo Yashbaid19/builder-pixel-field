@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { Search, Filter, Star, Users, Clock } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Skill {
   id: string;
