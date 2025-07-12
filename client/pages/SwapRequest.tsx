@@ -179,6 +179,12 @@ export default function SwapRequest() {
             </p>
           </div>
 
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800">{error}</p>
+            </div>
+          )}
+
           <form
             onSubmit={handleSubmit}
             className="bg-white rounded-lg shadow-sm border p-6 space-y-6"
