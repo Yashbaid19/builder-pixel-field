@@ -209,6 +209,21 @@ export const userApi = {
     return handleResponse(response);
   },
 
+  // New API function matching backend specification
+  updateUserProfile: async (data: {
+    name?: string;
+    location?: string;
+    skillsOffered?: string[];
+    skillsWanted?: string[];
+    availability?: string;
+  }) => {
+    const response = await authenticatedFetch(`${baseURL}/api/users/profile`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
   uploadProfilePicture: async (file: File) => {
     const formData = new FormData();
     formData.append("profilePicture", file);
