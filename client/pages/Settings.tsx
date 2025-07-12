@@ -409,7 +409,13 @@ export default function Settings() {
                         <div className="flex items-center gap-6">
                           <div className="relative">
                             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-                              {profilePreview ? (
+                              {imagePreview ? (
+                                <img
+                                  src={imagePreview}
+                                  alt="Profile"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : profilePreview ? (
                                 <img
                                   src={profilePreview}
                                   alt="Profile"
@@ -433,14 +439,32 @@ export default function Settings() {
                               id="profile-upload"
                             />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="text-sm text-gray-600 mb-2">
                               Click the camera icon to update your profile
                               picture
                             </p>
-                            <p className="text-xs text-gray-500">
-                              Recommended size: 200x200px
+                            <p className="text-xs text-gray-500 mb-3">
+                              Recommended size: 200x200px. Accepts JPG, PNG, GIF
                             </p>
+
+                            {/* New Upload Button */}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              ref={fileInputRef}
+                              onChange={handleProfilePictureUpload}
+                              className="hidden"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={uploading}
+                              className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                            >
+                              <Upload className="w-4 h-4" />
+                              {uploading ? "Uploading..." : "Upload New Photo"}
+                            </button>
                           </div>
                         </div>
                       </div>
