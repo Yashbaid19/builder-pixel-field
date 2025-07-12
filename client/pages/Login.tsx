@@ -12,14 +12,19 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login process
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      await login(email, password);
+      // Redirect to dashboard after successful login
+      navigate("/dashboard");
+    } catch (error: any) {
+      alert(error.message || "Login failed. Please try again.");
+    } finally {
       setIsLoading(false);
-      // Set authentication state
-      login();
-      // Redirect to swap request form after successful login
-      navigate("/swap-request");
-    }, 1000);
+    }
   };
 
   return (
