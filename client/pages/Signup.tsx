@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { useAuth } from "../contexts/AuthContext";
+import { authApi } from "../lib/api";
 import {
   Upload,
   X,
@@ -166,14 +167,83 @@ export default function Signup() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Register user via API
+      const signupResponse = await authApi.signup({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        location: formData.location,
+        skillsOffered: formData.skillsOffered,
+        skillsWanted: formData.skillsWanted,
+        availability: formData.availability,
+      });
+
+      // If signup returns token and user, use it directly
+      if (signupResponse.token && signupResponse.user) {
+        // Store auth token
+        localStorage.setItem("authToken", signupResponse.token);
+
+        // Store user data with proper mapping
+        const userData = {
+          id: signupResponse.user.id,
+          fullName: signupResponse.user.fullName || signupResponse.user.name,
+          email: signupResponse.user.email,
+          location: signupResponse.user.location,
+          skillsOffered:
+            signupResponse.user.skillsOffered ||
+            signupResponse.user.offered_skills ||
+            formData.skillsOffered,
+          skillsWanted:
+            signupResponse.user.skillsWanted ||
+            signupResponse.user.wanted_skills ||
+            formData.skillsWanted,
+          availability:
+            signupResponse.user.availability || formData.availability,
+          profilePicture:
+            signupResponse.user.profilePicture ||
+            signupResponse.user.profile_pic_url,
+        };
+
+        localStorage.setItem("userData", JSON.stringify(userData));
+
+        // Update auth context directly
+        updateUser(userData);
+
+        alert("Account created successfully!");
+        navigate("/dashboard");
+      } else {
+        // Fallback: Auto-login after successful registration
+        await login(formData.email, formData.password);
+
+        alert("Account created successfully!");
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      console.error("Error creating account:", error);
+
+      // Show user-friendly error message
+      if (
+        error.message?.includes("Cannot connect to backend") ||
+        error.message?.includes("API endpoint not found") ||
+        error.message?.includes("HTTP 404")
+      ) {
+        alert(
+          "Backend server not available. The app will continue in demo mode with sample data.",
+        );
+        // Attempt demo login
+        try {
+          await login(formData.email, formData.password);
+          navigate("/dashboard");
+        } catch (loginError) {
+          // If demo login fails, stay on signup page
+        }
+      } else {
+        alert(error.message || "Failed to create account. Please try again.");
+      }
+    } finally {
       setIsSubmitting(false);
-      login(); // Set authentication state
-      console.log("User registered:", formData);
-      alert("Account created successfully!");
-      navigate("/dashboard");
-    }, 2000);
+    }
   };
 
   return (

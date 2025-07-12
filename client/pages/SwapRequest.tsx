@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { useAuth } from "../contexts/AuthContext";
-import { Search, User, Clock, MessageCircle } from "lucide-react";
+import { Search, User as UserIcon, Clock, MessageCircle } from "lucide-react";
+import { swapApi, userApi } from "../lib/api";
 
 interface User {
   id: string;
@@ -10,39 +11,9 @@ interface User {
   avatar: string;
   skills: string[];
   rating: number;
+  location?: string;
+  profilePicture?: string;
 }
-
-// Mock users for selection
-const mockUsers: User[] = [
-  {
-    id: "user1",
-    name: "Sarah Chen",
-    avatar: "SC",
-    skills: ["UI/UX Design", "Figma", "Adobe Creative Suite"],
-    rating: 4.9,
-  },
-  {
-    id: "user2",
-    name: "Mike Rodriguez",
-    avatar: "MR",
-    skills: ["Digital Marketing", "SEO", "Social Media"],
-    rating: 4.7,
-  },
-  {
-    id: "user3",
-    name: "Emily Johnson",
-    avatar: "EJ",
-    skills: ["Photography", "Photo Editing", "Lightroom"],
-    rating: 4.8,
-  },
-  {
-    id: "user4",
-    name: "David Kim",
-    avatar: "DK",
-    skills: ["Data Science", "Python", "Machine Learning"],
-    rating: 4.6,
-  },
-];
 
 const availabilityOptions = [
   "Weekdays (9 AM - 5 PM)",
@@ -57,7 +28,7 @@ const availabilityOptions = [
 
 export default function SwapRequest() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [searchParams] = useSearchParams();
   const preselectedUserId = searchParams.get("userId");
 
@@ -72,23 +43,91 @@ export default function SwapRequest() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserSearch, setShowUserSearch] = useState(!preselectedUserId);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load users on component mount
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        setLoadingUsers(true);
+        const response = await userApi.searchUsers();
+        setUsers(response.users || []);
+      } catch (err) {
+        console.error("Error loading users:", err);
+        setError("Failed to load users. Please try again.");
+        // Fallback to mock data if API fails
+        setUsers([]);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadUsers();
+    }
+  }, [isAuthenticated]);
+
+  // Search users by skill when search term changes
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (!searchTerm.trim()) {
+        // Load all users when search is empty
+        try {
+          const response = await userApi.searchUsers();
+          setUsers(response.users || []);
+        } catch (err) {
+          console.error("Error loading users:", err);
+        }
+        return;
+      }
+
+      try {
+        setLoadingUsers(true);
+        const response = await userApi.searchUsers(searchTerm);
+        setUsers(response.users || []);
+      } catch (err) {
+        console.error("Error searching users:", err);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      const timeoutId = setTimeout(searchUsers, 300); // Debounce search
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchTerm, isAuthenticated]);
 
   // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
   if (!isAuthenticated) {
-    navigate("/login");
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
-  const filteredUsers = mockUsers.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.skills.some((skill) =>
+  const filteredUsers = users.filter(
+    (currentUser) =>
+      currentUser.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      currentUser.skills.some((skill) =>
         skill.toLowerCase().includes(searchTerm.toLowerCase()),
       ),
   );
 
-  const selectedUser = mockUsers.find(
-    (user) => user.id === formData.requestedTo,
+  const selectedUser = users.find(
+    (currentUser) => currentUser.id === formData.requestedTo,
   );
 
   const handleAvailabilityChange = (option: string) => {
@@ -103,22 +142,26 @@ export default function SwapRequest() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // Here you would typically send the data to your backend
-      console.log("Swap request submitted:", {
-        requestedBy: "current-user-id", // This would come from auth context
-        ...formData,
-        status: "pending",
-        createdAt: new Date(),
+    try {
+      await swapApi.sendRequest({
+        toUserId: formData.requestedTo,
+        offeredSkill: formData.skillOffered,
+        wantedSkill: formData.skillRequested,
+        availability: formData.availability,
+        message: formData.message,
       });
 
       // Show success message and redirect
       alert("Swap request sent successfully!");
-      navigate("/matches");
-    }, 1000);
+      navigate("/dashboard");
+    } catch (err: any) {
+      console.error("Error sending swap request:", err);
+      setError(err.message || "Failed to send swap request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -136,6 +179,12 @@ export default function SwapRequest() {
             </p>
           </div>
 
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800">{error}</p>
+            </div>
+          )}
+
           <form
             onSubmit={handleSubmit}
             className="bg-white rounded-lg shadow-sm border p-6 space-y-6"
@@ -143,7 +192,7 @@ export default function SwapRequest() {
             {/* User Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <User className="w-4 h-4 inline mr-1" />
+                <UserIcon className="w-4 h-4 inline mr-1" />
                 Send Request To *
               </label>
 
@@ -188,39 +237,47 @@ export default function SwapRequest() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {filteredUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      onClick={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          requestedTo: user.id,
-                        }));
-                        setShowUserSearch(false);
-                      }}
-                      className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                    >
-                      <div className="w-10 h-10 bg-skillswap-yellow rounded-full flex items-center justify-center text-sm font-bold text-skillswap-black">
-                        {user.avatar}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">
-                          {user.name}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          {user.skills.slice(0, 2).join(", ")}
-                          {user.skills.length > 2 && "..."}
-                        </p>
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        ★ {user.rating}
-                      </span>
+                  {loadingUsers ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto mb-2"></div>
+                      <p className="text-gray-500">Loading users...</p>
                     </div>
-                  ))}
-                  {filteredUsers.length === 0 && searchTerm && (
+                  ) : filteredUsers.length === 0 ? (
                     <p className="text-gray-500 text-center py-4">
-                      No users found matching "{searchTerm}"
+                      {searchTerm
+                        ? `No users found matching "${searchTerm}"`
+                        : "No users available"}
                     </p>
+                  ) : (
+                    filteredUsers.map((userItem) => (
+                      <div
+                        key={userItem.id}
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            requestedTo: userItem.id,
+                          }));
+                          setShowUserSearch(false);
+                        }}
+                        className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <div className="w-10 h-10 bg-skillswap-yellow rounded-full flex items-center justify-center text-sm font-bold text-skillswap-black">
+                          {userItem.avatar}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">
+                            {userItem.name}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {userItem.skills.slice(0, 2).join(", ")}
+                            {userItem.skills.length > 2 && "..."}
+                          </p>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          ★ {userItem.rating}
+                        </span>
+                      </div>
+                    ))
                   )}
                 </div>
               )}

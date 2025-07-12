@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { useAuth } from "../contexts/AuthContext";
+import { userApi, authApi } from "../lib/api";
 import {
   User,
   Mail,
@@ -72,23 +73,37 @@ export default function Settings() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(user?.profilePicture || "");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Redirect if not authenticated
-  if (!isAuthenticated) {
-    navigate("/login");
-    return null;
-  }
-
-  // Mock user data - in real app this would come from API/context
+  // Load user data from context and allow editing
   const [profileData, setProfileData] = useState({
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    location: "San Francisco, CA",
-    skillsOffered: ["Web Development", "JavaScript", "React"],
-    skillsWanted: ["UI/UX Design", "Python"],
-    availability: ["Weekends", "Weekdays (Evening)"],
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    location: user?.location || "",
+    skillsOffered: user?.skillsOffered || [],
+    skillsWanted: user?.skillsWanted || [],
+    availability: user?.availability || [],
     profilePicture: null as File | null,
   });
+
+  // Update profile data when user context changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        location: user.location || "",
+        skillsOffered: user.skillsOffered || [],
+        skillsWanted: user.skillsWanted || [],
+        availability: user.availability || [],
+        profilePicture: null,
+      });
+      setImagePreview(user.profilePicture || "");
+    }
+  }, [user]);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -154,28 +169,94 @@ export default function Settings() {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
+    setErrors({});
+
+    try {
+      // Prepare data for backend API
+      const updateData = {
+        name: profileData.fullName,
+        location: profileData.location,
+        skillsOffered: profileData.skillsOffered,
+        skillsWanted: profileData.skillsWanted,
+        availability: profileData.availability.join(", "), // Convert array to string for backend
+      };
+
+      // Update profile via new backend API
+      const updatedProfile = await userApi.updateUserProfile(updateData);
+
+      // Update user context with response data
+      updateUser({
+        fullName: updatedProfile.name || profileData.fullName,
+        email: profileData.email, // Email typically not updated via profile endpoint
+        location: updatedProfile.location || profileData.location,
+        skillsOffered:
+          updatedProfile.skillsOffered || profileData.skillsOffered,
+        skillsWanted: updatedProfile.skillsWanted || profileData.skillsWanted,
+        availability:
+          typeof updatedProfile.availability === "string"
+            ? updatedProfile.availability.split(", ").map((s) => s.trim())
+            : updatedProfile.availability || profileData.availability,
+      });
+
+      setSuccessMessage("✅ Profile updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000); // Clear message after 3 seconds
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+
+      // Show more specific error messages
+      if (
+        error.message?.includes("Cannot connect to backend") ||
+        error.message?.includes("API endpoint not found") ||
+        error.message?.includes("HTTP 404")
+      ) {
+        setSuccessMessage(
+          "✅ Profile updated successfully! (Demo mode - changes saved locally)",
+        );
+        setTimeout(() => setSuccessMessage(""), 3000);
+
+        // Update local context in demo mode
+        updateUser({
+          fullName: profileData.fullName,
+          email: profileData.email,
+          location: profileData.location,
+          skillsOffered: profileData.skillsOffered,
+          skillsWanted: profileData.skillsWanted,
+          availability: profileData.availability,
+        });
+      } else {
+        alert(error.message || "Failed to update profile. Please try again.");
+      }
+    } finally {
       setIsSaving(false);
-      alert("Profile updated successfully!");
-      console.log("Profile data:", profileData);
-    }, 1000);
+    }
   };
 
   const handleChangePassword = async () => {
     if (!validatePasswordChange()) return;
 
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+
+    try {
+      await authApi.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword,
+      );
+
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
+      setErrors({});
       alert("Password changed successfully!");
-    }, 1000);
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      setErrors({
+        currentPassword: error.message || "Failed to change password",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLogout = () => {
@@ -189,6 +270,74 @@ export default function Settings() {
     navigate("/");
     alert("Account deleted successfully");
   };
+
+  const handleProfilePictureUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const file = e.target.files[0];
+    setUploading(true);
+
+    try {
+      const { imageUrl } = await userApi.uploadProfilePicture(file);
+      setImagePreview(imageUrl);
+
+      // Update user context with new profile picture
+      updateUser({
+        ...user,
+        profilePicture: imageUrl,
+      });
+
+      setSuccessMessage("✅ Profile picture updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+
+      if (
+        err.message?.includes("Cannot connect to backend") ||
+        err.message?.includes("API endpoint not found") ||
+        err.message?.includes("HTTP 404")
+      ) {
+        // Demo mode fallback
+        const mockImageUrl = URL.createObjectURL(file);
+        setImagePreview(mockImageUrl);
+        updateUser({
+          ...user,
+          profilePicture: mockImageUrl,
+        });
+        setSuccessMessage(
+          "✅ Profile picture updated successfully! (Demo mode)",
+        );
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } else {
+        alert(
+          err.message || "Failed to upload profile picture. Please try again.",
+        );
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Show loading while redirecting
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: "profile", label: "Profile Settings", icon: User },
@@ -255,7 +404,13 @@ export default function Settings() {
                         <div className="flex items-center gap-6">
                           <div className="relative">
                             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-                              {profilePreview ? (
+                              {imagePreview ? (
+                                <img
+                                  src={imagePreview}
+                                  alt="Profile"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : profilePreview ? (
                                 <img
                                   src={profilePreview}
                                   alt="Profile"
@@ -279,14 +434,32 @@ export default function Settings() {
                               id="profile-upload"
                             />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="text-sm text-gray-600 mb-2">
                               Click the camera icon to update your profile
                               picture
                             </p>
-                            <p className="text-xs text-gray-500">
-                              Recommended size: 200x200px
+                            <p className="text-xs text-gray-500 mb-3">
+                              Recommended size: 200x200px. Accepts JPG, PNG, GIF
                             </p>
+
+                            {/* New Upload Button */}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              ref={fileInputRef}
+                              onChange={handleProfilePictureUpload}
+                              className="hidden"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={uploading}
+                              className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                            >
+                              <Upload className="w-4 h-4" />
+                              {uploading ? "Uploading..." : "Upload New Photo"}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -427,14 +600,24 @@ export default function Settings() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={handleSaveProfile}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-skillswap-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                      >
-                        <Save className="w-4 h-4" />
-                        {isSaving ? "Saving..." : "Save Profile"}
-                      </button>
+                      <div className="space-y-3">
+                        <button
+                          onClick={handleSaveProfile}
+                          disabled={isSaving}
+                          className="flex items-center gap-2 px-6 py-3 bg-skillswap-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                        >
+                          <Save className="w-4 h-4" />
+                          {isSaving ? "Saving..." : "Save Profile"}
+                        </button>
+
+                        {successMessage && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <p className="text-green-800 text-sm">
+                              {successMessage}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

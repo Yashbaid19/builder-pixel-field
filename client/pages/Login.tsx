@@ -12,14 +12,30 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login process
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      await login(email, password);
+      // Redirect to dashboard after successful login
+      navigate("/dashboard");
+    } catch (error: any) {
+      // Show user-friendly error message
+      if (
+        error.message?.includes("Cannot connect to backend") ||
+        error.message?.includes("API endpoint not found") ||
+        error.message?.includes("HTTP 404")
+      ) {
+        alert(
+          "Backend server not available. The app will continue in demo mode with sample data.",
+        );
+      } else {
+        alert(error.message || "Login failed. Please try again.");
+      }
+    } finally {
       setIsLoading(false);
-      // Set authentication state
-      login();
-      // Redirect to swap request form after successful login
-      navigate("/swap-request");
-    }, 1000);
+    }
   };
 
   return (
