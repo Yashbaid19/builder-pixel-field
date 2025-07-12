@@ -55,9 +55,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.error("Login failed:", error);
 
-      // Fallback demo login if backend is not available
-      if (error.message?.includes("Cannot connect to backend")) {
-        console.warn("Backend not available, using demo login mode");
+      // Fallback demo login if backend is not available or API endpoints don't exist
+      if (
+        error.message?.includes("Cannot connect to backend") ||
+        error.message?.includes("API endpoint not found") ||
+        error.message?.includes("HTTP 404")
+      ) {
+        console.warn(
+          "Backend not available or incomplete, using demo login mode:",
+          error.message,
+        );
 
         // Create demo user data
         const demoUser = {
