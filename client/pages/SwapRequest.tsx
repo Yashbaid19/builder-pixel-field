@@ -192,7 +192,7 @@ export default function SwapRequest() {
             {/* User Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <User className="w-4 h-4 inline mr-1" />
+                <UserIcon className="w-4 h-4 inline mr-1" />
                 Send Request To *
               </label>
 
