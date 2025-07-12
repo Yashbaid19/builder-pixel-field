@@ -184,11 +184,6 @@ export default function Settings() {
       // Update profile via new backend API
       const updatedProfile = await userApi.updateUserProfile(updateData);
 
-      // Upload profile picture if one was selected
-      if (profileData.profilePicture) {
-        await userApi.uploadProfilePicture(profileData.profilePicture);
-      }
-
       // Update user context with response data
       updateUser({
         fullName: updatedProfile.name || profileData.fullName,
