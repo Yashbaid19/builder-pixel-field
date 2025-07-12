@@ -4,10 +4,12 @@ import { useAuth } from "../contexts/AuthContext";
 import { DemoModeIndicator } from "./DemoModeIndicator";
 
 export function Header() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, isDemoMode } = useAuth();
 
   return (
-    <header className="bg-skillswap-black text-white sticky top-0 z-50">
+    <>
+      <DemoModeIndicator isDemoMode={isDemoMode} />
+      <header className={`bg-skillswap-black text-white sticky z-40 ${isDemoMode ? 'top-12' : 'top-0'}`}>
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 text-xl font-semibold">
           <ArrowRightLeft className="w-6 h-6" />
@@ -29,7 +31,7 @@ export function Header() {
               >
                 Request Swap
               </Link>
-              <Link
+                            <Link
                 to="/matches"
                 className="text-white hover:text-gray-300 transition-colors"
               >
