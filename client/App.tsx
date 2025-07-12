@@ -48,6 +48,7 @@ const App = () => (
             <Route path="/privacy" element={<About />} />
             <Route path="/terms" element={<About />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
