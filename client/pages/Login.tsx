@@ -1,7 +1,23 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
+import { useState } from "react";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // Simulate login process
+    setTimeout(() => {
+      setIsLoading(false);
+      // Redirect to swap request form after successful login
+      navigate("/swap-request");
+    }, 1000);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
