@@ -45,16 +45,25 @@ const handleResponse = async (response: Response) => {
 };
 
 // Helper function to make authenticated requests
-const authenticatedFetch = (url: string, options: RequestInit = {}) => {
+const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
   const token = getAuthToken();
-  return fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-  });
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+      },
+    });
+    return response;
+  } catch (networkError) {
+    console.error("Network error:", networkError);
+    throw new Error(
+      `Cannot connect to backend server at ${baseURL}. Please check if the server is running and the URL is correct.`,
+    );
+  }
 };
 
 // Auth APIs
