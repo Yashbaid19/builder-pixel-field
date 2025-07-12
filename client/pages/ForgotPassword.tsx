@@ -22,11 +22,14 @@ export default function ForgotPassword() {
       return;
     }
 
-    // Simulate API call to send password reset email
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await authApi.forgotPassword(email);
       setIsSubmitted(true);
-    }, 2000);
+    } catch (err: any) {
+      setError(err.message || "Failed to send reset email. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSubmitted) {
