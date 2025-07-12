@@ -2,7 +2,14 @@ const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // Helper function to get auth token
 const getAuthToken = () => {
-  return localStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
+  // Don't send demo token to backend
+  return token === "demo-token" ? null : token;
+};
+
+// Helper function to check if user is in demo mode
+const isDemoMode = () => {
+  return localStorage.getItem("authToken") === "demo-token";
 };
 
 // Helper function to handle API responses
