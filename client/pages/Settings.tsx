@@ -74,6 +74,9 @@ export default function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(user?.profilePicture || "");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Load user data from context and allow editing
   const [profileData, setProfileData] = useState({
