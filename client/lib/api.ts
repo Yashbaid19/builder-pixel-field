@@ -166,8 +166,12 @@ export const authApi = {
 
 // User APIs
 export const userApi = {
-  getDashboard: async () => {
-    const response = await authenticatedFetch(`${baseURL}/api/user/dashboard`);
+  getDashboard: async (userId?: string) => {
+    // Use userId if provided, otherwise backend should determine from JWT token
+    const endpoint = userId
+      ? `${baseURL}/api/users/dashboard/${userId}`
+      : `${baseURL}/api/user/dashboard`;
+    const response = await authenticatedFetch(endpoint);
     return handleResponse(response);
   },
 
