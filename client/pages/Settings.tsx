@@ -74,16 +74,31 @@ export default function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
 
-  // Mock user data - in real app this would come from API/context
+  // Load user data from context and allow editing
   const [profileData, setProfileData] = useState({
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    location: "San Francisco, CA",
-    skillsOffered: ["Web Development", "JavaScript", "React"],
-    skillsWanted: ["UI/UX Design", "Python"],
-    availability: ["Weekends", "Weekdays (Evening)"],
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    location: user?.location || "",
+    skillsOffered: user?.skillsOffered || [],
+    skillsWanted: user?.skillsWanted || [],
+    availability: user?.availability || [],
     profilePicture: null as File | null,
   });
+
+  // Update profile data when user context changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        location: user.location || "",
+        skillsOffered: user.skillsOffered || [],
+        skillsWanted: user.skillsWanted || [],
+        availability: user.availability || [],
+        profilePicture: null,
+      });
+    }
+  }, [user]);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
