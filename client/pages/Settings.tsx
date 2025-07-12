@@ -164,12 +164,41 @@ export default function Settings() {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+    setErrors({});
+
+    try {
+      // Update profile via API
+      await userApi.updateProfile({
+        fullName: profileData.fullName,
+        email: profileData.email,
+        location: profileData.location,
+        skillsOffered: profileData.skillsOffered,
+        skillsWanted: profileData.skillsWanted,
+        availability: profileData.availability,
+      });
+
+      // Upload profile picture if one was selected
+      if (profileData.profilePicture) {
+        await userApi.uploadProfilePicture(profileData.profilePicture);
+      }
+
+      // Update user context
+      updateUser({
+        fullName: profileData.fullName,
+        email: profileData.email,
+        location: profileData.location,
+        skillsOffered: profileData.skillsOffered,
+        skillsWanted: profileData.skillsWanted,
+        availability: profileData.availability,
+      });
+
       alert("Profile updated successfully!");
-      console.log("Profile data:", profileData);
-    }, 1000);
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      alert(error.message || "Failed to update profile. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleChangePassword = async () => {
