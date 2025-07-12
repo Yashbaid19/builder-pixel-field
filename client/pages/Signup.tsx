@@ -167,14 +167,29 @@ export default function Signup() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      login(); // Set authentication state
-      console.log("User registered:", formData);
+    try {
+      // Register user via API
+      await authApi.signup({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        location: formData.location,
+        skillsOffered: formData.skillsOffered,
+        skillsWanted: formData.skillsWanted,
+        availability: formData.availability,
+      });
+
+      // Auto-login after successful registration
+      await login(formData.email, formData.password);
+
       alert("Account created successfully!");
       navigate("/dashboard");
-    }, 2000);
+    } catch (error: any) {
+      console.error("Error creating account:", error);
+      alert(error.message || "Failed to create account. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
