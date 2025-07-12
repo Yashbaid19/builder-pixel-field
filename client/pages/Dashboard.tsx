@@ -153,6 +153,36 @@ export default function Dashboard() {
     }
   };
 
+  // Load dashboard stats from new API
+  const fetchDashboardStats = async () => {
+    if (!user?.id) return;
+
+    try {
+      setStatsError(null);
+      setStatsLoading(true);
+      const statsData = await userApi.getDashboardStats(user.id);
+      setDashboardStats({
+        totalSwaps: statsData.totalSwaps || 0,
+        acceptedSwaps: statsData.acceptedSwaps || 0,
+        rejectedSwaps: statsData.rejectedSwaps || 0,
+        feedbacks: statsData.feedbacks || 0,
+      });
+    } catch (err: any) {
+      console.error("Dashboard stats error:", err);
+      setStatsError(err.message || "Failed to load dashboard stats");
+
+      // Keep default values on error
+      setDashboardStats({
+        totalSwaps: 0,
+        acceptedSwaps: 0,
+        rejectedSwaps: 0,
+        feedbacks: 0,
+      });
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
   // Load data on component mount
   useEffect(() => {
     if (isAuthenticated) {
