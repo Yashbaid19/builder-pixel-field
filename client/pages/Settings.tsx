@@ -73,6 +73,7 @@ export default function Settings() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Load user data from context and allow editing
   const [profileData, setProfileData] = useState({
