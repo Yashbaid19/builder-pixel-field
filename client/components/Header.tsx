@@ -41,18 +41,37 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Link
-            to="/login"
-            className="text-white hover:text-gray-300 transition-colors"
-          >
-            Log In
-          </Link>
-          <Link
-            to="/signup"
-            className="bg-skillswap-yellow text-skillswap-black px-4 py-2 rounded-md hover:bg-yellow-400 transition-colors font-medium"
-          >
-            Sign Up
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/dashboard"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={logout}
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Log Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Log In
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-skillswap-yellow text-skillswap-black px-4 py-2 rounded-md hover:bg-yellow-400 transition-colors font-medium"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
