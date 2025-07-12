@@ -283,7 +283,10 @@ export default function SkillsBrowse() {
 
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-600">by {skill.instructor}</p>
-                  <button className="bg-skillswap-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm">
+                  <button
+                    onClick={handleRequestSwap}
+                    className="bg-skillswap-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+                  >
                     Request Swap
                   </button>
                 </div>
