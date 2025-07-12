@@ -35,6 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
+  const [isDemoMode, setIsDemoMode] = useState(() => {
+    // Check if we're in demo mode
+    return localStorage.getItem("authToken") === "demo-token";
+  });
+
   const login = async (email: string, password: string) => {
     try {
       const response = await authApi.login(email, password);
