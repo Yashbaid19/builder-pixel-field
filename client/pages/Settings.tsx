@@ -210,9 +210,10 @@ export default function Settings() {
         error.message?.includes("API endpoint not found") ||
         error.message?.includes("HTTP 404")
       ) {
-        alert(
-          "Backend server not available. Profile changes saved locally in demo mode.",
+        setSuccessMessage(
+          "✅ Profile updated successfully! (Demo mode - changes saved locally)",
         );
+        setTimeout(() => setSuccessMessage(""), 3000);
 
         // Update local context in demo mode
         updateUser({
