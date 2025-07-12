@@ -201,6 +201,7 @@ export default function Dashboard() {
   const handleRefresh = () => {
     setRefreshing(true);
     loadDashboardData();
+    fetchDashboardStats();
   };
 
   const handleAcceptRequest = async (requestId: string) => {
