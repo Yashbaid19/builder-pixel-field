@@ -187,8 +187,9 @@ export default function Dashboard() {
   useEffect(() => {
     if (isAuthenticated) {
       loadDashboardData();
+      fetchDashboardStats();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   // Redirect if not authenticated
   useEffect(() => {
