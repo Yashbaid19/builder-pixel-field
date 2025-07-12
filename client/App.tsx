@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import About from "./pages/About";
 import SwapRequest from "./pages/SwapRequest";
 import Matches from "./pages/Matches";
+import SkillsBrowse from "./pages/SkillsBrowse";
 
 const queryClient = new QueryClient();
 
