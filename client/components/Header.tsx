@@ -3,6 +3,8 @@ import { ArrowRightLeft } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
 export function Header() {
+  const { isAuthenticated, logout } = useAuth();
+
   return (
     <header className="bg-skillswap-black text-white sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
