@@ -46,8 +46,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setIsAuthenticated(true);
       setUser(response.user);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed:", error);
+
+      // Fallback demo login if backend is not available
+      if (error.message?.includes("Cannot connect to backend")) {
+        console.warn("Backend not available, using demo login mode");
+
+        // Create demo user data
+        const demoUser = {
+          id: "demo-user",
+          fullName: "Demo User",
+          email: email,
+          location: "San Francisco, CA",
+          skillsOffered: ["React", "JavaScript", "Node.js"],
+          skillsWanted: ["Python", "UI/UX Design"],
+          availability: ["Weekends", "Evenings"],
+        };
+
+        // Store demo token and user data
+        localStorage.setItem("authToken", "demo-token");
+        localStorage.setItem("userData", JSON.stringify(demoUser));
+
+        setIsAuthenticated(true);
+        setUser(demoUser);
+
+        // Show warning to user
+        setTimeout(() => {
+          alert(
+            "Demo mode: Backend server not available. Using offline demo data.",
+          );
+        }, 100);
+
+        return;
+      }
+
       throw error;
     }
   };
