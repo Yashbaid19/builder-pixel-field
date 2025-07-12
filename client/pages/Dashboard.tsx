@@ -19,10 +19,11 @@ import {
   Trash2,
   Calendar,
   Badge,
+  RefreshCw,
 } from "lucide-react";
-import { userApi, swapApi } from "../lib/api";
+import { userApi, swapApi, feedbackApi } from "../lib/api";
 
-// Mock data types
+// Types for API responses
 interface SwapRequest {
   id: string;
   fromUser: {
@@ -58,140 +59,175 @@ interface Feedback {
   date: string;
 }
 
+interface DashboardData {
+  user: {
+    name: string;
+    email: string;
+    location?: string;
+    skillsOffered: string[];
+    skillsWanted: string[];
+    availability: string[];
+    profilePicture?: string;
+  };
+  stats: {
+    swapsCompleted: number;
+    avgRating: number;
+    skillsShared: number;
+    skillsLearning: number;
+  };
+  incomingRequests: SwapRequest[];
+  sentRequests: OutgoingRequest[];
+  feedbackReceived: Feedback[];
+  feedbackGiven: Feedback[];
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, updateUser } = useAuth();
   const [processingRequest, setProcessingRequest] = useState<string | null>(
     null,
   );
 
-  // Mock incoming requests - initialize all hooks first
-  const [incomingRequests, setIncomingRequests] = useState<SwapRequest[]>([
-    {
-      id: "1",
-      fromUser: {
-        name: "Alice Johnson",
-        email: "alice@example.com",
-        skillsOffered: ["Python", "Data Science"],
-      },
-      skillWanted: "React",
-      message:
-        "Hi! I'd love to learn React from you. I can teach you Python and data analysis in return.",
-      status: "pending",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "2",
-      fromUser: {
-        name: "Bob Smith",
-        email: "bob@example.com",
-        skillsOffered: ["UI/UX Design", "Figma"],
-      },
-      skillWanted: "JavaScript",
-      message:
-        "Looking to improve my JavaScript skills. Can help with design work!",
-      status: "pending",
-      createdAt: "2024-01-14",
-    },
-  ]);
+  // State for dashboard data
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Mock user data
-  const userData = {
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    location: "San Francisco, CA",
-    skillsOffered: ["React", "JavaScript", "Node.js"],
-    skillsWanted: ["Python", "UI/UX Design"],
-    availability: ["Weekends", "Evenings"],
-    profilePicture: null,
+  // Load dashboard data
+  const loadDashboardData = async () => {
+    try {
+      setError(null);
+      const data = await userApi.getDashboard();
+      setDashboardData(data);
+
+      // Update user context with latest user data
+      if (data.user) {
+        updateUser(data.user);
+      }
+    } catch (err: any) {
+      console.error("Error loading dashboard:", err);
+      setError(err.message || "Failed to load dashboard data");
+
+      // Fallback to mock data if API fails
+      setDashboardData({
+        user: {
+          name: user?.fullName || "John Doe",
+          email: user?.email || "john.doe@example.com",
+          location: user?.location || "San Francisco, CA",
+          skillsOffered: user?.skillsOffered || [
+            "React",
+            "JavaScript",
+            "Node.js",
+          ],
+          skillsWanted: user?.skillsWanted || ["Python", "UI/UX Design"],
+          availability: user?.availability || ["Weekends", "Evenings"],
+          profilePicture: user?.profilePicture,
+        },
+        stats: {
+          swapsCompleted: 0,
+          avgRating: 0,
+          skillsShared: user?.skillsOffered?.length || 0,
+          skillsLearning: user?.skillsWanted?.length || 0,
+        },
+        incomingRequests: [],
+        sentRequests: [],
+        feedbackReceived: [],
+        feedbackGiven: [],
+      });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  // Mock outgoing requests
-  const outgoingRequests: OutgoingRequest[] = [
-    {
-      id: "1",
-      toUser: {
-        name: "Sarah Wilson",
-        email: "sarah@example.com",
-      },
-      skillOffered: "React",
-      skillWanted: "Machine Learning",
-      status: "pending",
-      createdAt: "2024-01-10",
-    },
-    {
-      id: "2",
-      toUser: {
-        name: "Mike Chen",
-        email: "mike@example.com",
-      },
-      skillOffered: "JavaScript",
-      skillWanted: "Photography",
-      status: "accepted",
-      createdAt: "2024-01-08",
-    },
-  ];
+  // Load data on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadDashboardData();
+    }
+  }, [isAuthenticated]);
 
-  // Mock feedback data
-  const feedbackData: Feedback[] = [
-    {
-      id: "1",
-      type: "received",
-      user: "Emma Davis",
-      skill: "React",
-      rating: 5,
-      message: "Excellent teacher! Very patient and clear explanations.",
-      date: "2024-01-12",
-    },
-    {
-      id: "2",
-      type: "given",
-      user: "Tom Anderson",
-      skill: "Python",
-      rating: 4,
-      message: "Great session, learned a lot about data structures!",
-      date: "2024-01-10",
-    },
-  ];
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
 
-  // Stats calculation
-  const stats = {
-    swapsCompleted:
-      outgoingRequests.filter((r) => r.status === "accepted").length +
-      incomingRequests.filter((r) => r.status === "accepted").length,
-    averageRating:
-      feedbackData
-        .filter((f) => f.type === "received")
-        .reduce((acc, f) => acc + f.rating, 0) /
-        feedbackData.filter((f) => f.type === "received").length || 0,
-    skillsShared: userData.skillsOffered.length,
-    skillsGained: userData.skillsWanted.length,
+  const handleRefresh = () => {
+    setRefreshing(true);
+    loadDashboardData();
   };
 
   const handleAcceptRequest = async (requestId: string) => {
     setProcessingRequest(requestId);
-    // Simulate API call
-    setTimeout(() => {
-      setIncomingRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId ? { ...req, status: "accepted" as const } : req,
-        ),
-      );
+    try {
+      await swapApi.updateRequestStatus(requestId, "accepted");
+
+      // Update local state
+      setDashboardData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          incomingRequests: prev.incomingRequests.map((req) =>
+            req.id === requestId
+              ? { ...req, status: "accepted" as const }
+              : req,
+          ),
+        };
+      });
+    } catch (err: any) {
+      console.error("Error accepting request:", err);
+      alert(err.message || "Failed to accept request");
+    } finally {
       setProcessingRequest(null);
-    }, 1000);
+    }
   };
 
   const handleRejectRequest = async (requestId: string) => {
     setProcessingRequest(requestId);
-    // Simulate API call
-    setTimeout(() => {
-      setIncomingRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId ? { ...req, status: "rejected" as const } : req,
-        ),
-      );
+    try {
+      await swapApi.updateRequestStatus(requestId, "rejected");
+
+      // Update local state
+      setDashboardData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          incomingRequests: prev.incomingRequests.map((req) =>
+            req.id === requestId
+              ? { ...req, status: "rejected" as const }
+              : req,
+          ),
+        };
+      });
+    } catch (err: any) {
+      console.error("Error rejecting request:", err);
+      alert(err.message || "Failed to reject request");
+    } finally {
       setProcessingRequest(null);
-    }, 1000);
+    }
+  };
+
+  const handleDeleteRequest = async (requestId: string) => {
+    try {
+      await swapApi.deleteRequest(requestId);
+
+      // Update local state
+      setDashboardData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          sentRequests: prev.sentRequests.filter((req) => req.id !== requestId),
+        };
+      });
+    } catch (err: any) {
+      console.error("Error deleting request:", err);
+      alert(err.message || "Failed to delete request");
+    }
   };
 
   const renderStars = (rating: number) => {
@@ -205,13 +241,6 @@ export default function Dashboard() {
     ));
   };
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
-
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -223,6 +252,48 @@ export default function Dashboard() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Failed to load dashboard data</p>
+            <button
+              onClick={handleRefresh}
+              className="px-4 py-2 bg-skillswap-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const {
+    user: userData,
+    stats,
+    incomingRequests,
+    sentRequests,
+    feedbackReceived,
+    feedbackGiven,
+  } = dashboardData;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -231,10 +302,34 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-            <p className="text-xl text-gray-600">
-              Manage your skill swaps and track your progress
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                  Dashboard
+                </h1>
+                <p className="text-xl text-gray-600">
+                  Manage your skill swaps and track your progress
+                </p>
+              </div>
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex items-center gap-2 px-4 py-2 bg-skillswap-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+                />
+                Refresh
+              </button>
+            </div>
+
+            {error && (
+              <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-yellow-800">
+                  <strong>Note:</strong> {error}. Showing offline data.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -268,7 +363,7 @@ export default function Dashboard() {
                     )}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {userData.fullName}
+                    {userData.name}
                   </h3>
                   <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
                     <Mail className="w-4 h-4" />
@@ -360,8 +455,8 @@ export default function Dashboard() {
                     <div className="flex items-center justify-center gap-1">
                       <Star className="w-4 h-4 text-yellow-500 fill-current" />
                       <span className="text-2xl font-bold text-yellow-600">
-                        {stats.averageRating
-                          ? stats.averageRating.toFixed(1)
+                        {stats.avgRating > 0
+                          ? stats.avgRating.toFixed(1)
                           : "N/A"}
                       </span>
                     </div>
@@ -375,7 +470,7 @@ export default function Dashboard() {
                   </div>
                   <div className="text-center p-3 bg-purple-50 rounded-lg">
                     <div className="text-2xl font-bold text-purple-600">
-                      {stats.skillsGained}
+                      {stats.skillsLearning}
                     </div>
                     <div className="text-xs text-purple-600">
                       Skills Learning
@@ -482,7 +577,7 @@ export default function Dashboard() {
                         )}
                         <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
                           <Clock className="w-3 h-3" />
-                          {request.createdAt}
+                          {new Date(request.createdAt).toLocaleDateString()}
                         </div>
                       </div>
                     ))
@@ -497,12 +592,12 @@ export default function Dashboard() {
                 </h2>
 
                 <div className="space-y-4">
-                  {outgoingRequests.length === 0 ? (
+                  {sentRequests.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       No outgoing requests yet
                     </div>
                   ) : (
-                    outgoingRequests.map((request) => (
+                    sentRequests.map((request) => (
                       <div
                         key={request.id}
                         className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
@@ -524,7 +619,7 @@ export default function Dashboard() {
                             </p>
                             <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
                               <Clock className="w-3 h-3" />
-                              {request.createdAt}
+                              {new Date(request.createdAt).toLocaleDateString()}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -540,7 +635,10 @@ export default function Dashboard() {
                               {request.status}
                             </span>
                             {request.status === "pending" && (
-                              <button className="flex items-center gap-1 px-2 py-1 text-red-600 border border-red-300 rounded hover:bg-red-50 text-sm">
+                              <button
+                                onClick={() => handleDeleteRequest(request.id)}
+                                className="flex items-center gap-1 px-2 py-1 text-red-600 border border-red-300 rounded hover:bg-red-50 text-sm"
+                              >
                                 <Trash2 className="w-3 h-3" />
                                 Cancel
                               </button>
@@ -567,9 +665,12 @@ export default function Dashboard() {
                       Feedback Received
                     </h3>
                     <div className="space-y-3">
-                      {feedbackData
-                        .filter((f) => f.type === "received")
-                        .map((feedback) => (
+                      {feedbackReceived.length === 0 ? (
+                        <p className="text-gray-500 text-sm">
+                          No feedback received yet
+                        </p>
+                      ) : (
+                        feedbackReceived.map((feedback) => (
                           <div
                             key={feedback.id}
                             className="border border-gray-200 rounded-lg p-3"
@@ -589,10 +690,11 @@ export default function Dashboard() {
                               "{feedback.message}"
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              {feedback.date}
+                              {new Date(feedback.date).toLocaleDateString()}
                             </p>
                           </div>
-                        ))}
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -603,9 +705,12 @@ export default function Dashboard() {
                       Feedback Given
                     </h3>
                     <div className="space-y-3">
-                      {feedbackData
-                        .filter((f) => f.type === "given")
-                        .map((feedback) => (
+                      {feedbackGiven.length === 0 ? (
+                        <p className="text-gray-500 text-sm">
+                          No feedback given yet
+                        </p>
+                      ) : (
+                        feedbackGiven.map((feedback) => (
                           <div
                             key={feedback.id}
                             className="border border-gray-200 rounded-lg p-3"
@@ -625,10 +730,11 @@ export default function Dashboard() {
                               "{feedback.message}"
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              {feedback.date}
+                              {new Date(feedback.date).toLocaleDateString()}
                             </p>
                           </div>
-                        ))}
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
