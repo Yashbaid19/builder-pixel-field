@@ -205,16 +205,28 @@ export default function Settings() {
     if (!validatePasswordChange()) return;
 
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+
+    try {
+      await authApi.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword,
+      );
+
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
+      setErrors({});
       alert("Password changed successfully!");
-    }, 1000);
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      setErrors({
+        currentPassword: error.message || "Failed to change password",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLogout = () => {
