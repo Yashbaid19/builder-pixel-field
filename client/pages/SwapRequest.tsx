@@ -139,7 +139,7 @@ export default function SwapRequest() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
@@ -170,7 +170,7 @@ export default function SwapRequest() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
+                      <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Send Swap Request
             </h1>
@@ -191,7 +191,7 @@ export default function SwapRequest() {
           >
             {/* User Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                 <UserIcon className="w-4 h-4 inline mr-1" />
                 Send Request To *
               </label>
@@ -235,9 +235,23 @@ export default function SwapRequest() {
                     Change
                   </button>
                 </div>
-              ) : (
+                            ) : (
                 <div className="space-y-2">
-                  {filteredUsers.map((user) => (
+                  {loadingUsers ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto mb-2"></div>
+                      <p className="text-gray-500">Loading users...</p>
+                    </div>
+                  ) : filteredUsers.length === 0 && searchTerm ? (
+                    <p className="text-gray-500 text-center py-4">
+                      No users found matching "{searchTerm}"
+                    </p>
+                  ) : filteredUsers.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">
+                      No users available
+                    </p>
+                  ) : (
+                    filteredUsers.map((userItem) => (
                     <div
                       key={user.id}
                       onClick={() => {
