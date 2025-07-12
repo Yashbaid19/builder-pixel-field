@@ -54,6 +54,11 @@ const handleResponse = async (response: Response) => {
 
 // Helper function to make authenticated requests
 const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+  // If in demo mode, throw error to trigger fallback
+  if (isDemoMode()) {
+    throw new Error("Demo mode: API calls are disabled");
+  }
+
   const token = getAuthToken();
 
   try {
