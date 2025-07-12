@@ -12,10 +12,16 @@ export function Header() {
 
         <nav className="hidden md:flex items-center gap-8">
           <Link
-            to="/features"
+            to="/browse-skills"
             className="text-white hover:text-gray-300 transition-colors"
           >
-            Features
+            Browse Skills
+          </Link>
+          <Link
+            to="/matches"
+            className="text-white hover:text-gray-300 transition-colors"
+          >
+            Matches
           </Link>
           <Link
             to="/how-it-works"
