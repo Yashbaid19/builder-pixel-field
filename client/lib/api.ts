@@ -187,6 +187,13 @@ export const userApi = {
     return handleResponse(response);
   },
 
+  getDashboardStats: async (userId: string) => {
+    const response = await authenticatedFetch(
+      `${baseURL}/api/users/dashboard/${userId}`,
+    );
+    return handleResponse(response);
+  },
+
   updateProfile: async (data: {
     fullName?: string;
     email?: string;
