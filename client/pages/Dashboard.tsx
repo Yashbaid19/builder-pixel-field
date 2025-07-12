@@ -96,6 +96,16 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // State for dashboard stats from new API
+  const [dashboardStats, setDashboardStats] = useState({
+    totalSwaps: 0,
+    acceptedSwaps: 0,
+    rejectedSwaps: 0,
+    feedbacks: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
   // Load dashboard data
   const loadDashboardData = async () => {
     try {
