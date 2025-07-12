@@ -8,12 +8,40 @@ const getAuthToken = () => {
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: "An error occurred" }));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorData.error || errorMessage;
+    } catch (parseError) {
+      // If response is not JSON, use status text or a more descriptive message
+      if (response.status === 0 || response.status >= 500) {
+        errorMessage =
+          "Backend server is not available. Please check if the server is running on the configured URL.";
+      } else if (response.status === 404) {
+        errorMessage =
+          "API endpoint not found. Please check the backend route configuration.";
+      } else if (response.status === 401) {
+        errorMessage = "Authentication failed. Please check your credentials.";
+      }
+    }
+
+    console.error("API Error:", {
+      url: response.url,
+      status: response.status,
+      statusText: response.statusText,
+      message: errorMessage,
+    });
+
+    throw new Error(errorMessage);
   }
-  return response.json();
+
+  try {
+    return await response.json();
+  } catch (parseError) {
+    console.error("Failed to parse response as JSON:", parseError);
+    throw new Error("Invalid response format from server");
+  }
 };
 
 // Helper function to make authenticated requests
