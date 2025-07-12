@@ -26,8 +26,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
+      <AuthProvider>
+        <BrowserRouter>
+                <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -36,7 +37,7 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/about" element={<About />} />
           <Route path="/swap-request" element={<SwapRequest />} />
-          <Route path="/matches" element={<Matches />} />
+                    <Route path="/matches" element={<Matches />} />
           <Route path="/browse-skills" element={<SkillsBrowse />} />
           <Route path="/features" element={<About />} />
           <Route path="/how-it-works" element={<About />} />
