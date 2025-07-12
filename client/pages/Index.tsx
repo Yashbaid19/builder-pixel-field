@@ -10,13 +10,7 @@ export default function Index() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <div className="mb-12">
-            <img
-              src="https://cdn.builder.io/api/v1/assets/8b4f828eec6344e98bea2975194c1465/landing-page-dc2663?format=webp&width=800"
-              alt="People collaborating around a circular design"
-              className="mx-auto max-w-md w-full h-auto mb-8"
-            />
-          </div>
+          <div className="mb-12" />
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Unlock New Opportunities with SkillSwap
