@@ -64,36 +64,7 @@ export default function Dashboard() {
     null,
   );
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to login...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Mock user data
-  const userData = {
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    location: "San Francisco, CA",
-    skillsOffered: ["React", "JavaScript", "Node.js"],
-    skillsWanted: ["Python", "UI/UX Design"],
-    availability: ["Weekends", "Evenings"],
-    profilePicture: null,
-  };
-
-  // Mock incoming requests
+  // Mock incoming requests - initialize all hooks first
   const [incomingRequests, setIncomingRequests] = useState<SwapRequest[]>([
     {
       id: "1",
