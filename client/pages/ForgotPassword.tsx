@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Header } from "../components/Header";
 import { useState } from "react";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
+import { authApi } from "../lib/api";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
