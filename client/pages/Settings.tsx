@@ -276,6 +276,55 @@ export default function Settings() {
     alert("Account deleted successfully");
   };
 
+  const handleProfilePictureUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const file = e.target.files[0];
+    setUploading(true);
+
+    try {
+      const { imageUrl } = await userApi.uploadProfilePicture(file);
+      setImagePreview(imageUrl);
+
+      // Update user context with new profile picture
+      updateUser({
+        ...user,
+        profilePicture: imageUrl,
+      });
+
+      setSuccessMessage("✅ Profile picture updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+
+      if (
+        err.message?.includes("Cannot connect to backend") ||
+        err.message?.includes("API endpoint not found") ||
+        err.message?.includes("HTTP 404")
+      ) {
+        // Demo mode fallback
+        const mockImageUrl = URL.createObjectURL(file);
+        setImagePreview(mockImageUrl);
+        updateUser({
+          ...user,
+          profilePicture: mockImageUrl,
+        });
+        setSuccessMessage(
+          "✅ Profile picture updated successfully! (Demo mode)",
+        );
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } else {
+        alert(
+          err.message || "Failed to upload profile picture. Please try again.",
+        );
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
