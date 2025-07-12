@@ -199,7 +199,8 @@ export default function Settings() {
             : updatedProfile.availability || profileData.availability,
       });
 
-      alert("✅ Profile updated successfully!");
+      setSuccessMessage("✅ Profile updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000); // Clear message after 3 seconds
     } catch (error: any) {
       console.error("Error updating profile:", error);
 
