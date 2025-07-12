@@ -109,10 +109,20 @@ const categories = [
 const levels = ["All", "Beginner", "Intermediate", "Advanced"];
 
 export default function SkillsBrowse() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedLevel, setSelectedLevel] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
+
+  const handleRequestSwap = () => {
+    if (isAuthenticated) {
+      navigate("/swap-request");
+    } else {
+      navigate("/signup");
+    }
+  };
 
   const filteredSkills = mockSkills.filter((skill) => {
     const matchesSearch =
