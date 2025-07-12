@@ -100,7 +100,7 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setError(null);
-      const data = await userApi.getDashboard();
+      const data = await userApi.getDashboard(user?.id);
       setDashboardData(data);
 
       // Update user context with latest user data
