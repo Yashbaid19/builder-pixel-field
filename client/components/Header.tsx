@@ -35,7 +35,7 @@ export function Header() {
                 Matches
               </Link>
               <Link
-                to="/incoming-requests"
+                to="/dashboard"
                 className="text-white hover:text-gray-300 transition-colors"
               >
                 My Requests
