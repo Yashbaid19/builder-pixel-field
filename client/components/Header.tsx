@@ -74,6 +74,12 @@ export function Header() {
               >
                 Dashboard
               </Link>
+              <Link
+                to="/settings"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                Settings
+              </Link>
               <button
                 onClick={logout}
                 className="text-white hover:text-gray-300 transition-colors"
