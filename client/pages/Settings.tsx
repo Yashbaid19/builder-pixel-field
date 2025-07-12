@@ -528,14 +528,24 @@ export default function Settings() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={handleSaveProfile}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-skillswap-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                      >
-                        <Save className="w-4 h-4" />
-                        {isSaving ? "Saving..." : "Save Profile"}
-                      </button>
+                      <div className="space-y-3">
+                        <button
+                          onClick={handleSaveProfile}
+                          disabled={isSaving}
+                          className="flex items-center gap-2 px-6 py-3 bg-skillswap-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                        >
+                          <Save className="w-4 h-4" />
+                          {isSaving ? "Saving..." : "Save Profile"}
+                        </button>
+
+                        {successMessage && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <p className="text-green-800 text-sm">
+                              {successMessage}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
