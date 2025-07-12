@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRightLeft } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { DemoModeIndicator } from "./DemoModeIndicator";
 
 export function Header() {
   const { isAuthenticated, logout } = useAuth();
