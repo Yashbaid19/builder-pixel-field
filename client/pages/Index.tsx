@@ -35,14 +35,15 @@ export default function Index() {
 
           {/* Hero Content */}
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight md:leading-tight">
               Unlock New{" "}
               <span className="bg-gradient-to-r from-skillswap-black to-gray-600 bg-clip-text text-transparent">
                 Opportunities
-              </span>{" "}
-              with{" "}
-              <span className="relative">
-                <span className="bg-skillswap-yellow px-2 py-1 rounded-lg">
+              </span>
+              <br className="block md:hidden" />
+              <span className="block md:inline"> with </span>
+              <span className="inline-block">
+                <span className="bg-skillswap-yellow px-3 py-1 rounded-lg whitespace-nowrap">
                   SkillSwap
                 </span>
               </span>
