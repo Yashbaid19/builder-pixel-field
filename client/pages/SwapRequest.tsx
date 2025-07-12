@@ -1,23 +1,396 @@
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
+import { useAuth } from "../contexts/AuthContext";
+import { Search, User, Clock, MessageCircle } from "lucide-react";
+
+interface User {
+  id: string;
+  name: string;
+  avatar: string;
+  skills: string[];
+  rating: number;
+}
+
+// Mock users for selection
+const mockUsers: User[] = [
+  {
+    id: "user1",
+    name: "Sarah Chen",
+    avatar: "SC",
+    skills: ["UI/UX Design", "Figma", "Adobe Creative Suite"],
+    rating: 4.9,
+  },
+  {
+    id: "user2",
+    name: "Mike Rodriguez",
+    avatar: "MR",
+    skills: ["Digital Marketing", "SEO", "Social Media"],
+    rating: 4.7,
+  },
+  {
+    id: "user3",
+    name: "Emily Johnson",
+    avatar: "EJ",
+    skills: ["Photography", "Photo Editing", "Lightroom"],
+    rating: 4.8,
+  },
+  {
+    id: "user4",
+    name: "David Kim",
+    avatar: "DK",
+    skills: ["Data Science", "Python", "Machine Learning"],
+    rating: 4.6,
+  },
+];
+
+const availabilityOptions = [
+  "Weekdays (9 AM - 5 PM)",
+  "Weekdays (Evening)",
+  "Weekends",
+  "Saturday Morning",
+  "Saturday Afternoon",
+  "Sunday Morning",
+  "Sunday Afternoon",
+  "Flexible Schedule",
+];
 
 export default function SwapRequest() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
+  const preselectedUserId = searchParams.get("userId");
+
+  const [formData, setFormData] = useState({
+    requestedTo: preselectedUserId || "",
+    skillOffered: "",
+    skillRequested: "",
+    availability: [] as string[],
+    message: "",
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showUserSearch, setShowUserSearch] = useState(!preselectedUserId);
+
+  // Redirect if not authenticated
+  if (!isAuthenticated) {
+    navigate("/login");
+    return null;
+  }
+
+  const filteredUsers = mockUsers.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.skills.some((skill) =>
+        skill.toLowerCase().includes(searchTerm.toLowerCase()),
+      ),
+  );
+
+  const selectedUser = mockUsers.find(
+    (user) => user.id === formData.requestedTo,
+  );
+
+  const handleAvailabilityChange = (option: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      availability: prev.availability.includes(option)
+        ? prev.availability.filter((item) => item !== option)
+        : [...prev.availability, option],
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      // Here you would typically send the data to your backend
+      console.log("Swap request submitted:", {
+        requestedBy: "current-user-id", // This would come from auth context
+        ...formData,
+        status: "pending",
+        createdAt: new Date(),
+      });
+
+      // Show success message and redirect
+      alert("Swap request sent successfully!");
+      navigate("/matches");
+    }, 1000);
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-20">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Swap Request Form
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Coming soon - request skill exchanges with other users
-          </p>
-          <div className="bg-skillswap-light-gray rounded-lg p-12">
-            <p className="text-gray-500">
-              Swap request form will be implemented here
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Send Swap Request
+            </h1>
+            <p className="text-xl text-gray-600">
+              Connect with other users to exchange skills and knowledge
             </p>
           </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow-sm border p-6 space-y-6"
+          >
+            {/* User Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <User className="w-4 h-4 inline mr-1" />
+                Send Request To *
+              </label>
+
+              {!selectedUser && (
+                <div className="mb-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Search for users by name or skills..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-skillswap-black focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedUser ? (
+                <div className="flex items-center gap-4 p-4 bg-skillswap-light-gray rounded-lg">
+                  <div className="w-12 h-12 bg-skillswap-yellow rounded-full flex items-center justify-center text-lg font-bold text-skillswap-black">
+                    {selectedUser.avatar}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">
+                      {selectedUser.name}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Skills: {selectedUser.skills.join(", ")}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, requestedTo: "" }));
+                      setShowUserSearch(true);
+                    }}
+                    className="text-sm text-skillswap-black hover:underline"
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          requestedTo: user.id,
+                        }));
+                        setShowUserSearch(false);
+                      }}
+                      className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      <div className="w-10 h-10 bg-skillswap-yellow rounded-full flex items-center justify-center text-sm font-bold text-skillswap-black">
+                        {user.avatar}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">
+                          {user.name}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {user.skills.slice(0, 2).join(", ")}
+                          {user.skills.length > 2 && "..."}
+                        </p>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        ★ {user.rating}
+                      </span>
+                    </div>
+                  ))}
+                  {filteredUsers.length === 0 && searchTerm && (
+                    <p className="text-gray-500 text-center py-4">
+                      No users found matching "{searchTerm}"
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Skill Offered */}
+            <div>
+              <label
+                htmlFor="skillOffered"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Skill You're Offering *
+              </label>
+              <input
+                type="text"
+                id="skillOffered"
+                required
+                value={formData.skillOffered}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    skillOffered: e.target.value,
+                  }))
+                }
+                placeholder="e.g., Python Programming, Graphic Design, Spanish Language"
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-skillswap-black focus:border-transparent"
+              />
+            </div>
+
+            {/* Skill Requested */}
+            <div>
+              <label
+                htmlFor="skillRequested"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Skill You Want to Learn *
+              </label>
+              <input
+                type="text"
+                id="skillRequested"
+                required
+                value={formData.skillRequested}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    skillRequested: e.target.value,
+                  }))
+                }
+                placeholder="e.g., Photoshop, Web Development, Guitar Playing"
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-skillswap-black focus:border-transparent"
+              />
+            </div>
+
+            {/* Availability */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-1" />
+                Your Availability * (Select all that apply)
+              </label>
+              <div className="grid md:grid-cols-2 gap-3">
+                {availabilityOptions.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                      formData.availability.includes(option)
+                        ? "border-skillswap-black bg-skillswap-light-gray"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.availability.includes(option)}
+                      onChange={() => handleAvailabilityChange(option)}
+                      className="w-4 h-4 text-skillswap-black bg-gray-100 border-gray-300 rounded focus:ring-skillswap-black focus:ring-2"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">{option}</span>
+                  </label>
+                ))}
+              </div>
+              {formData.availability.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Please select at least one availability option
+                </p>
+              )}
+            </div>
+
+            {/* Message */}
+            <div>
+              <label
+                htmlFor="message"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                <MessageCircle className="w-4 h-4 inline mr-1" />
+                Personal Message (Optional)
+              </label>
+              <textarea
+                id="message"
+                rows={4}
+                value={formData.message}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, message: e.target.value }))
+                }
+                placeholder="Introduce yourself and explain why you'd like to do this skill swap..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-skillswap-black focus:border-transparent"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                {formData.message.length}/500 characters
+              </p>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  !formData.requestedTo ||
+                  !formData.skillOffered ||
+                  !formData.skillRequested ||
+                  formData.availability.length === 0
+                }
+                className="flex-1 px-6 py-3 bg-skillswap-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isSubmitting ? "Sending Request..." : "Send Swap Request"}
+              </button>
+            </div>
+          </form>
+
+          {/* Form Preview */}
+          {(formData.requestedTo ||
+            formData.skillOffered ||
+            formData.skillRequested) && (
+            <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-blue-900 mb-4">
+                Request Preview
+              </h3>
+              <div className="space-y-2 text-sm">
+                {selectedUser && (
+                  <p>
+                    <span className="font-medium">To:</span> {selectedUser.name}
+                  </p>
+                )}
+                {formData.skillOffered && (
+                  <p>
+                    <span className="font-medium">Offering:</span>{" "}
+                    {formData.skillOffered}
+                  </p>
+                )}
+                {formData.skillRequested && (
+                  <p>
+                    <span className="font-medium">Requesting:</span>{" "}
+                    {formData.skillRequested}
+                  </p>
+                )}
+                {formData.availability.length > 0 && (
+                  <p>
+                    <span className="font-medium">Available:</span>{" "}
+                    {formData.availability.join(", ")}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
