@@ -94,6 +94,17 @@ export default function Dashboard() {
     },
   ]);
 
+  // Mock user data
+  const userData = {
+    fullName: "John Doe",
+    email: "john.doe@example.com",
+    location: "San Francisco, CA",
+    skillsOffered: ["React", "JavaScript", "Node.js"],
+    skillsWanted: ["Python", "UI/UX Design"],
+    availability: ["Weekends", "Evenings"],
+    profilePicture: null,
+  };
+
   // Mock outgoing requests
   const outgoingRequests: OutgoingRequest[] = [
     {
