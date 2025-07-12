@@ -44,14 +44,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await authApi.login(email, password);
 
+      // Validate response structure
+      if (!response.token || !response.user) {
+        throw new Error(
+          "Invalid response from server: missing token or user data",
+        );
+      }
+
       // Store auth token
       localStorage.setItem("authToken", response.token);
 
-      // Store user data
-      localStorage.setItem("userData", JSON.stringify(response.user));
+      // Store user data with proper mapping
+      const userData = {
+        id: response.user.id,
+        fullName: response.user.fullName || response.user.name,
+        email: response.user.email,
+        location: response.user.location,
+        skillsOffered:
+          response.user.skillsOffered || response.user.offered_skills || [],
+        skillsWanted:
+          response.user.skillsWanted || response.user.wanted_skills || [],
+        availability: response.user.availability || [],
+        profilePicture:
+          response.user.profilePicture || response.user.profile_pic_url,
+      };
+
+      localStorage.setItem("userData", JSON.stringify(userData));
 
       setIsAuthenticated(true);
-      setUser(response.user);
+      setUser(userData);
+      setIsDemoMode(false);
     } catch (error: any) {
       console.error("Login failed:", error);
 
