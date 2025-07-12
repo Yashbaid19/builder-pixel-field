@@ -13,37 +13,15 @@ interface User {
   rating: number;
 }
 
-// Mock users for selection
-const mockUsers: User[] = [
-  {
-    id: "user1",
-    name: "Sarah Chen",
-    avatar: "SC",
-    skills: ["UI/UX Design", "Figma", "Adobe Creative Suite"],
-    rating: 4.9,
-  },
-  {
-    id: "user2",
-    name: "Mike Rodriguez",
-    avatar: "MR",
-    skills: ["Digital Marketing", "SEO", "Social Media"],
-    rating: 4.7,
-  },
-  {
-    id: "user3",
-    name: "Emily Johnson",
-    avatar: "EJ",
-    skills: ["Photography", "Photo Editing", "Lightroom"],
-    rating: 4.8,
-  },
-  {
-    id: "user4",
-    name: "David Kim",
-    avatar: "DK",
-    skills: ["Data Science", "Python", "Machine Learning"],
-    rating: 4.6,
-  },
-];
+interface User {
+  id: string;
+  name: string;
+  avatar: string;
+  skills: string[];
+  rating: number;
+  location?: string;
+  profilePicture?: string;
+}
 
 const availabilityOptions = [
   "Weekdays (9 AM - 5 PM)",
