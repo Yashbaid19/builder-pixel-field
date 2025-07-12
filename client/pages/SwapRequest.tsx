@@ -142,22 +142,26 @@ export default function SwapRequest() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // Here you would typically send the data to your backend
-      console.log("Swap request submitted:", {
-        requestedBy: "current-user-id", // This would come from auth context
-        ...formData,
-        status: "pending",
-        createdAt: new Date(),
+    try {
+      await swapApi.sendRequest({
+        toUserId: formData.requestedTo,
+        offeredSkill: formData.skillOffered,
+        wantedSkill: formData.skillRequested,
+        availability: formData.availability,
+        message: formData.message,
       });
 
       // Show success message and redirect
       alert("Swap request sent successfully!");
-      navigate("/matches");
-    }, 1000);
+      navigate("/dashboard");
+    } catch (err: any) {
+      console.error("Error sending swap request:", err);
+      setError(err.message || "Failed to send swap request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
