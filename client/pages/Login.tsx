@@ -1,0 +1,80 @@
+import { Link } from "react-router-dom";
+import { Header } from "../components/Header";
+
+export default function Login() {
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Header />
+
+      <div className="flex items-center justify-center py-20 px-4">
+        <div className="bg-white rounded-lg shadow-sm p-8 w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+              Welcome Back to SkillSwap
+            </h1>
+            <p className="text-gray-600">Log in to continue</p>
+          </div>
+
+          <form className="space-y-6">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter your email"
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-skillswap-black focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-skillswap-black focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div className="text-left">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-gray-600 hover:text-skillswap-black transition-colors"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-skillswap-black text-white py-3 rounded-md hover:bg-gray-800 transition-colors font-medium"
+            >
+              Log In
+            </button>
+
+            <Link
+              to="/signup"
+              className="w-full bg-skillswap-yellow text-skillswap-black py-3 rounded-md hover:bg-yellow-400 transition-colors font-medium block text-center"
+            >
+              Sign Up for SkillSwap
+            </Link>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
